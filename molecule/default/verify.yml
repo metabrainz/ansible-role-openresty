@@ -1,0 +1,25 @@
+---
+- name: Verify
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Ensure openresty symlink is installed
+      ansible.builtin.stat:
+        path: "/usr/bin/openresty"
+      register: result
+      changed_when: false
+      failed_when: result.stat.islnk is not defined or not result.stat.islnk
+
+    - name: Ensure openresty is listening on port 8000
+      # noqa command-instead-of-module
+      ansible.builtin.command: curl -s http://localhost:8000/molecule
+      register: result
+      failed_when: result.rc != 0 or result.stdout != "ansible"
+      changed_when: false
+
+    - name: Ensure openresty is not listening on port 8001
+      # noqa command-instead-of-module
+      ansible.builtin.command: curl -s http://localhost:8001/molecule
+      register: result
+      failed_when: result.rc != 7 or "ansible" in result.stdout
+      changed_when: false

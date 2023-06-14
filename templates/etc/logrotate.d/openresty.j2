@@ -1,0 +1,6 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+# {{ ansible_managed }}
+{% if openresty_logrotate_configuration %}
+
+{{ openresty_logrotate_configuration }}
+{% endif %}

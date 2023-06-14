@@ -1,0 +1,11 @@
+# {{ ansible_managed }}
+
+server {
+  listen 127.0.0.1:8000;
+  server_name localhost;
+
+  location /molecule {
+    add_header Content-Type text/plain;
+    return 200 'ansible';
+  }
+}

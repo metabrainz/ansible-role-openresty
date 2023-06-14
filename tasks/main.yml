@@ -1,0 +1,285 @@
+---
+- name: Check system architecture is supported
+  ansible.builtin.fail:
+    msg: "{{ ansible_architecture }} is not a supported architecture"
+  when: openresty_deb_architecture[ansible_architecture] is not defined
+
+- name: Install openresty repository key
+  ansible.builtin.get_url:
+    url: "{{ openresty_repository_key_url }}"
+    dest: "{{ openresty_repository_key_path }}"
+    checksum: "{{ openresty_repository_key_checksum | d(omit) }}"
+    mode: "0644"
+
+- name: Add openresty repository
+  ansible.builtin.apt_repository:
+    repo: >-
+      deb [arch={{ openresty_deb_architecture[ansible_architecture] }} signed-by={{ openresty_repository_key_path }}]
+      http://openresty.org/package/{{ ansible_distribution | lower }}
+      {{ ansible_distribution_release }}
+      main
+    filename: openresty
+    state: present
+    update_cache: true
+
+- name: Install openresty
+  ansible.builtin.apt:
+    name: >-
+      {{
+        ("%s=%s" | format(openresty_package, openresty_package_version))
+          if (openresty_package_version | d()) else openresty_package
+      }}
+    state: "{{ openresty_package_state }}"
+    install_recommends: "{{ openresty_install_recommends | d(omit) }}"
+    policy_rc_d: "{{ openresty_package_policy_rc_d }}"
+  ignore_errors: "{{ ansible_check_mode }}"
+
+- name: Set openresty package dpkg selection states
+  ansible.builtin.dpkg_selections:
+    name: "{{ openresty_package }}"
+    selection: "{{ openresty_package_dpkg_selection }}"
+  when: openresty_package_dpkg_selection | d()
+
+- name: Install openresty Lua packages
+  ansible.builtin.command:
+    argv:
+      - opm
+      - install
+      - "{{ item }}"
+  register: _openresty_opm_install
+  loop: "{{ (openresty_opm_packages + openresty_group_opm_packages + openresty_host_opm_packages) | flatten }}"
+  changed_when: "'installed successfully' in _openresty_opm_install.stdout"
+
+- name: Create openresty configuration directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    mode: "0755"
+    state: directory
+  loop:
+    - "{{ openresty_events_configuration_directory }}"
+    - "{{ openresty_http_configuration_directory }}"
+    - "{{ openresty_stream_configuration_directory }}"
+    - "{{ openresty_includes_directory }}"
+    - "{{ openresty_maps_directory }}"
+    - "{{ openresty_sites_available_directory }}"
+    - "{{ openresty_sites_enabled_directory }}"
+
+- name: Create openresty logs directory
+  ansible.builtin.file:
+    path: "{{ openresty_logs_directory }}"
+    owner: "{{ openresty_logs_directory_owner }}"
+    group: "{{ openresty_logs_directory_group | d(omit) }}"
+    mode: "{{ openresty_logs_directory_mode }}"
+    state: directory
+
+- name: Install openresty logrotate configuration
+  ansible.builtin.template:
+    src: etc/logrotate.d/openresty.j2
+    dest: "{{ openresty_logrotate_configuration_file }}"
+    mode: "0644"
+
+- name: Install openresty base configuration
+  ansible.builtin.template:
+    src: "etc/openresty/openresty.conf.j2"
+    dest: "{{ openresty_configuration_directory }}/{{ item.key }}.conf"
+    owner: "{{ item.owner | d(omit) }}"
+    group: "{{ item.group | d(omit) }}"
+    mode: "{{ item.mode | d('0644') }}"
+    backup: "{{ item.backup | d(omit) }}"
+  loop: "{{ _openresty_configuration | dict2items }}"
+  vars:
+    _openresty_configuration: >-
+      {{
+        openresty_configuration | combine(
+          openresty_group_configuration,
+          openresty_host_configuration,
+        )
+      }}
+  notify:
+    - test openresty configuration
+    - reload openresty
+
+- name: Install openresty events context configuration
+  ansible.builtin.template:
+    src: "etc/openresty/openresty.conf.j2"
+    dest: "{{ openresty_events_configuration_directory }}/{{ item.key }}.conf"
+    owner: "{{ item.owner | d(omit) }}"
+    group: "{{ item.group | d(omit) }}"
+    mode: "{{ item.mode | d('0644') }}"
+    backup: "{{ item.backup | d(omit) }}"
+  loop: "{{ _openresty_events_configuration | dict2items }}"
+  vars:
+    _openresty_events_configuration: >-
+      {{
+        openresty_events_configuration | combine(
+          openresty_group_events_configuration,
+          openresty_host_events_configuration,
+        )
+      }}
+  notify:
+    - test openresty configuration
+    - reload openresty
+
+- name: Install openresty http context configuration
+  ansible.builtin.template:
+    src: "etc/openresty/openresty.conf.j2"
+    dest: "{{ openresty_http_configuration_directory }}/{{ item.key }}.conf"
+    owner: "{{ item.owner | d(omit) }}"
+    group: "{{ item.group | d(omit) }}"
+    mode: "{{ item.mode | d('0644') }}"
+    backup: "{{ item.backup | d(omit) }}"
+  loop: "{{ _openresty_http_configuration | dict2items }}"
+  vars:
+    _openresty_http_configuration: >-
+      {{
+        openresty_http_configuration | combine(
+          openresty_group_http_configuration,
+          openresty_host_http_configuration,
+        )
+      }}
+  notify:
+    - test openresty configuration
+    - reload openresty
+
+- name: Install openresty stream context configuration
+  ansible.builtin.template:
+    src: "etc/openresty/openresty.conf.j2"
+    dest: "{{ openresty_stream_configuration_directory }}/{{ item.key }}.conf"
+    owner: "{{ item.owner | d(omit) }}"
+    group: "{{ item.group | d(omit) }}"
+    mode: "{{ item.mode | d('0644') }}"
+    backup: "{{ item.backup | d(omit) }}"
+  loop: "{{ _openresty_stream_configuration | dict2items }}"
+  vars:
+    _openresty_stream_configuration: >-
+      {{
+        openresty_stream_configuration | combine(
+          openresty_group_stream_configuration,
+          openresty_host_stream_configuration,
+        )
+      }}
+  notify:
+    - test openresty configuration
+    - reload openresty
+
+- name: Install openresty includes
+  ansible.builtin.template:
+    src: "etc/openresty/openresty.conf.j2"
+    dest: "{{ openresty_includes_directory }}/{{ item.key }}.conf"
+    owner: "{{ item.owner | d(omit) }}"
+    group: "{{ item.group | d(omit) }}"
+    mode: "{{ item.mode | d('0644') }}"
+    backup: "{{ item.backup | d(omit) }}"
+  loop: "{{ _openresty_includes | dict2items }}"
+  vars:
+    _openresty_includes: >-
+      {{
+        openresty_includes | combine(
+          openresty_group_includes,
+          openresty_host_includes,
+        )
+      }}
+  notify:
+    - test openresty configuration
+    - reload openresty
+
+- name: Install openresty maps configuration
+  ansible.builtin.template:
+    src: "etc/openresty/openresty.conf.j2"
+    dest: "{{ openresty_maps_directory }}/{{ item.key }}"
+    owner: "{{ item.owner | d(omit) }}"
+    group: "{{ item.group | d(omit) }}"
+    mode: "{{ item.mode | d('0644') }}"
+    backup: "{{ item.backup | d(omit) }}"
+  loop: "{{ _openresty_maps | dict2items }}"
+  vars:
+    _openresty_maps: >-
+      {{
+        openresty_maps | combine(
+          openresty_group_maps,
+          openresty_host_maps,
+        )
+      }}
+  notify:
+    - test openresty configuration
+    - reload openresty
+
+- name: Install openresty params
+  ansible.builtin.template:
+    src: "etc/openresty/openresty.conf.j2"
+    dest: "{{ openresty_configuration_directory }}/{{ item.key }}_params"
+    owner: "{{ item.owner | d(omit) }}"
+    group: "{{ item.group | d(omit) }}"
+    mode: "{{ item.mode | d('0644') }}"
+    backup: "{{ item.backup | d(omit) }}"
+  loop: "{{ _openresty_params | dict2items }}"
+  vars:
+    _openresty_params: >-
+      {{
+        openresty_params | combine(
+          openresty_group_params,
+          openresty_host_params,
+        )
+      }}
+  notify:
+    - test openresty configuration
+    - reload openresty
+
+- name: Install openresty sites
+  ansible.builtin.template:
+    src: "etc/openresty/openresty.conf.j2"
+    dest: "{{ openresty_sites_available_directory }}/{{ item.key }}.conf"
+    owner: "{{ item.owner | d(omit) }}"
+    group: "{{ item.group | d(omit) }}"
+    mode: "{{ item.mode | d('0644') }}"
+    backup: "{{ item.backup | d(omit) }}"
+  loop: "{{ _openresty_sites_available | dict2items }}"
+  vars:
+    _openresty_sites_available: >-
+      {{
+        openresty_sites_available | combine(
+          openresty_group_sites_available,
+          openresty_host_sites_available,
+        )
+      }}
+  notify:
+    - test openresty configuration
+    - reload openresty
+
+- name: Combine openresty sites enabled variables
+  ansible.builtin.set_fact:
+    _openresty_sites_enabled: >-
+      {{
+        openresty_sites_enabled | combine(
+          openresty_group_sites_enabled,
+          openresty_host_sites_enabled,
+        )
+      }} 
+
+- name: Enable openresty sites
+  ansible.builtin.file:
+    src: "{{ openresty_sites_available_directory }}/{{ item.key }}.conf"
+    path: "{{ openresty_sites_enabled_directory }}/{{ item.key }}"
+    state: link
+  when: item.value | bool
+  loop: "{{ _openresty_sites_enabled | dict2items }}"
+  notify:
+    - test openresty configuration
+    - reload openresty
+  
+- name: Disable openresty sites
+  ansible.builtin.file:
+    path: "{{ openresty_sites_enabled_directory }}/{{ item.key }}"
+    state: absent
+  when: not (item.value | bool)
+  loop: "{{ _openresty_sites_enabled | dict2items }}"
+  notify:
+    - test openresty configuration
+    - reload openresty
+
+- name: Enable and start openresty
+  ansible.builtin.service:
+    name: openresty
+    enabled: "{{ openresty_service_enabled }}"
+    state: "{{ openresty_service_state }}"
+  ignore_errors: "{{ ansible_check_mode }}"

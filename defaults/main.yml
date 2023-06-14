@@ -1,0 +1,179 @@
+---
+openresty_repository_key_url: https://openresty.org/package/pubkey.gpg
+openresty_repository_key_path: /usr/share/keyrings/openresty.asc
+#docker_repository_key_checksum:
+
+openresty_package: openresty
+#openresty_package_version: "1.21.4.1-1~focal1"
+openresty_package_state: present
+#openresty_package_dpkg_selection: hold
+openresty_package_policy_rc_d: 101
+#openresty_install_recommends: false
+
+openresty_service_enabled: true
+openresty_service_state: started
+openresty_reload_handler_state: reloaded
+
+openresty_user: www-data
+
+openresty_logs_directory: /var/log/openresty
+openresty_logs_directory_owner: "{{ openresty_user }}"
+#openresty_logs_directory_group:
+openresty_logs_directory_mode: "0750"
+
+openresty_logrotate_configuration: |
+  {{ openresty_logs_directory }}/*.log
+  {
+    rotate 7
+    daily
+    missingok
+    notifempty
+    delaycompress
+    compress
+    sharedscripts
+    postrotate
+      systemctl -q is-active openresty && systemctl reload openresty || true
+    endscript
+  }
+
+openresty_configuration:
+  nginx: |
+    user {{ openresty_user }};
+    worker_processes 1;
+    
+    error_log {{ openresty_logs_directory }}/error_log info;
+    
+    events {
+      worker_connections 1024;
+      include {{ openresty_events_configuration_directory }}/*.conf;
+    }
+
+    http {
+      include mime.types;
+      default_type application/octet-stream;
+    
+      log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                        '$status $body_bytes_sent "$http_referer" '
+                        '"$http_user_agent" "$http_x_forwarded_for"';
+    
+      access_log {{ openresty_logs_directory }}/access_log main;
+    
+      server {
+        listen 80;
+        server_name localhost;
+    
+        location / {
+          root html;
+          index index.html index.htm;
+        }
+      
+        error_page 500 502 503 504 /50x.html;
+        location = /50x.html {
+          root html;
+        }
+      }
+    
+      include {{ openresty_http_configuration_directory }}/*.conf;
+      include {{ openresty_sites_enabled_directory }}/*;
+    }
+    
+    stream {
+      include {{ openresty_stream_configuration_directory }}/*.conf;
+    }
+openresty_group_configuration: {}
+openresty_host_configuration: {}
+
+openresty_http_configuration: {}
+openresty_group_http_configuration: {}
+openresty_host_http_configuration: {}
+
+openresty_events_configuration: {}
+openresty_group_events_configuration: {}
+openresty_host_events_configuration: {}
+
+openresty_stream_configuration: {}
+openresty_group_stream_configuration: {}
+openresty_host_stream_configuration: {}
+
+openresty_includes: {}
+openresty_group_includes: {}
+openresty_host_includes: {}
+
+openresty_maps: {}
+openresty_group_maps: {}
+openresty_host_maps: {}
+
+openresty_params:
+  fastcgi: |
+    fastcgi_param  QUERY_STRING       $query_string;
+    fastcgi_param  REQUEST_METHOD     $request_method;
+    fastcgi_param  CONTENT_TYPE       $content_type;
+    fastcgi_param  CONTENT_LENGTH     $content_length;
+    
+    fastcgi_param  SCRIPT_NAME        $fastcgi_script_name;
+    fastcgi_param  REQUEST_URI        $request_uri;
+    fastcgi_param  DOCUMENT_URI       $document_uri;
+    fastcgi_param  DOCUMENT_ROOT      $document_root;
+    fastcgi_param  SERVER_PROTOCOL    $server_protocol;
+    fastcgi_param  REQUEST_SCHEME     $scheme;
+    fastcgi_param  HTTPS              $https if_not_empty;
+    
+    fastcgi_param  GATEWAY_INTERFACE  CGI/1.1;
+    fastcgi_param  SERVER_SOFTWARE    nginx/$nginx_version;
+    
+    fastcgi_param  REMOTE_ADDR        $remote_addr;
+    fastcgi_param  REMOTE_PORT        $remote_port;
+    fastcgi_param  SERVER_ADDR        $server_addr;
+    fastcgi_param  SERVER_PORT        $server_port;
+    fastcgi_param  SERVER_NAME        $server_name;
+    
+    # PHP only, required if PHP was built with --enable-force-cgi-redirect
+    fastcgi_param  REDIRECT_STATUS    200;
+  scgi: |
+    scgi_param  REQUEST_METHOD     $request_method;
+    scgi_param  REQUEST_URI        $request_uri;
+    scgi_param  QUERY_STRING       $query_string;
+    scgi_param  CONTENT_TYPE       $content_type;
+
+    scgi_param  DOCUMENT_URI       $document_uri;
+    scgi_param  DOCUMENT_ROOT      $document_root;
+    scgi_param  SCGI               1;
+    scgi_param  SERVER_PROTOCOL    $server_protocol;
+    scgi_param  REQUEST_SCHEME     $scheme;
+    scgi_param  HTTPS              $https if_not_empty;
+
+    scgi_param  REMOTE_ADDR        $remote_addr;
+    scgi_param  REMOTE_PORT        $remote_port;
+    scgi_param  SERVER_PORT        $server_port;
+    scgi_param  SERVER_NAME        $server_name;
+  uwsgi: |
+    uwsgi_param  QUERY_STRING       $query_string;
+    uwsgi_param  REQUEST_METHOD     $request_method;
+    uwsgi_param  CONTENT_TYPE       $content_type;
+    uwsgi_param  CONTENT_LENGTH     $content_length;
+
+    uwsgi_param  REQUEST_URI        $request_uri;
+    uwsgi_param  PATH_INFO          $document_uri;
+    uwsgi_param  DOCUMENT_ROOT      $document_root;
+    uwsgi_param  SERVER_PROTOCOL    $server_protocol;
+    uwsgi_param  REQUEST_SCHEME     $scheme;
+    uwsgi_param  HTTPS              $https if_not_empty;
+
+    uwsgi_param  REMOTE_ADDR        $remote_addr;
+    uwsgi_param  REMOTE_PORT        $remote_port;
+    uwsgi_param  SERVER_PORT        $server_port;
+    uwsgi_param  SERVER_NAME        $server_name;
+openresty_group_params: {}
+openresty_host_params: {}
+
+openresty_sites_available: {}
+openresty_group_sites_available: {}
+openresty_host_sites_available: {}
+
+openresty_sites_enabled: {}
+openresty_group_sites_enabled: {}
+openresty_host_sites_enabled: {}
+
+openresty_opm_packages: []
+openresty_group_opm_packages: []
+openresty_host_opm_packages: []

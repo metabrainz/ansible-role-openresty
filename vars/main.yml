@@ -1,0 +1,17 @@
+---
+openresty_deb_architecture:
+  aarch64: arm64
+  x86_64: amd64
+
+openresty_binary_path: /usr/bin/openresty
+
+openresty_configuration_directory: /etc/openresty
+openresty_events_configuration_directory: "{{ openresty_configuration_directory }}/events.d"
+openresty_http_configuration_directory: "{{ openresty_configuration_directory }}/http.d"
+openresty_includes_directory: "{{ openresty_configuration_directory }}/includes"
+openresty_maps_directory: "{{ openresty_configuration_directory }}/maps"
+openresty_sites_available_directory: "{{ openresty_configuration_directory }}/sites-available"
+openresty_sites_enabled_directory: "{{ openresty_configuration_directory }}/sites-enabled"
+openresty_stream_configuration_directory: "{{ openresty_configuration_directory }}/stream.d"
+
+openresty_logrotate_configuration_file: /etc/logrotate.d/openresty

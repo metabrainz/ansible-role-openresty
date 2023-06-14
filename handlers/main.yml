@@ -1,0 +1,20 @@
+---
+- name: Test openresty configuration
+  listen: test openresty configuration
+  ansible.builtin.command:
+    argv:
+      - "{{ openresty_binary_path }}"
+      - -q
+      - -t
+      - -g
+      - daemon on; master_process on;
+  changed_when: false
+  ignore_errors: "{{ ansible_check_mode }}"
+
+- name: Reload openresty
+  listen: reload openresty
+  ansible.builtin.service:
+    name: openresty
+    state: "{{ openresty_reload_handler_state }}"
+  when: openresty_service_state == "started"
+  ignore_errors: "{{ ansible_check_mode }}"

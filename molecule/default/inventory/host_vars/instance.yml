@@ -13,6 +13,6 @@ openresty_host_sites_available:
       }
     }
 
-openresty_sites_enabled:
+openresty_host_sites_enabled:
   molecule: true
   disabled: false

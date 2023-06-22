@@ -1,2 +1,35 @@
 ---
 openresty_package_version: "1.21.4.1-1~{{ ansible_distribution_release }}1"
+
+openresty_opm_packages:
+  - fffonion/lua-resty-acme
+
+openresty_lua_scripts:
+  ansible: |
+    local _M = {}
+
+    function _M.test()
+      ngx.say("openresty Lua test passed")
+    end
+
+    return _M
+
+openresty_group_sites_available:
+  lua: |
+    lua_package_path "{{ openresty_lua_scripts_directory }}/?.lua;;";
+
+    server {
+      listen 127.0.0.1:8002;
+      server_name localhost;
+
+      location / {
+        default_type text/plain;
+        content_by_lua_block {
+          local ansible = require "ansible"
+          ansible.test()
+        }
+      }
+    }
+
+openresty_sites_enabled:
+  lua: true

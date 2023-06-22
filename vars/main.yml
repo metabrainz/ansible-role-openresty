@@ -14,4 +14,6 @@ openresty_sites_available_directory: "{{ openresty_configuration_directory }}/si
 openresty_sites_enabled_directory: "{{ openresty_configuration_directory }}/sites-enabled"
 openresty_stream_configuration_directory: "{{ openresty_configuration_directory }}/stream.d"
 
+openresty_lua_scripts_directory: "{{ openresty_configuration_directory }}/lua"
+
 openresty_logrotate_configuration_file: /etc/logrotate.d/openresty

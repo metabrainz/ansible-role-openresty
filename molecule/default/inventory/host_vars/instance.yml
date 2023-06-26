@@ -1,4 +1,9 @@
 ---
+openresty_host_lua_scripts:
+  test:
+    directory: files/lua/test/
+    dest: echo_header
+
 openresty_host_sites_available:
   molecule:
     template: openresty-molecule-site.conf.j2
@@ -12,7 +17,21 @@ openresty_host_sites_available:
         return 200 'ansible';
       }
     }
+  lua_echo:
+    server {
+      listen 127.0.0.1:8008;
+      server_name localhost;
+
+      location / {
+        default_type text/plain;
+        content_by_lua_block {
+          local echo_header = require "echo_header.echo_header"
+          echo_header.echo()
+        }
+      }
+    }
 
 openresty_host_sites_enabled:
   molecule: true
   disabled: false
+  lua_echo: true

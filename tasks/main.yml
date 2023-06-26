@@ -205,6 +205,33 @@
     - test openresty configuration
     - reload openresty
 
+- name: Merge openresty Lua script configuration
+  ansible.builtin.set_fact:
+    _openresty_lua_scripts: >-
+      {{
+        openresty_lua_scripts | combine(
+          openresty_group_lua_scripts,
+          openresty_host_lua_scripts,
+        )
+      }}
+
+- name: Install openresty Lua script directories
+  ansible.builtin.copy:
+    src: "{{ item.value.directory }}"
+    dest: >-
+      {{
+        (openresty_lua_scripts_directory + '/' + item.value.dest) if
+          (item.value.dest| d()) else openresty_lua_scripts_directory
+      }}
+    owner: "{{ item.value.owner | d(omit) }}"
+    group: "{{ item.value.group | d(omit) }}"
+    mode: "{{ item.value.mode | d('0644') }}"
+    directory_mode: "{{ item.value.directory_mode | d('0755') }}"
+  loop: "{{ _openresty_lua_scripts | dict2items | selectattr('value.directory', 'defined') }}"
+  notify:
+    - test openresty configuration
+    - reload openresty
+
 - name: Install openresty Lua scripts
   ansible.builtin.template:
     src: "etc/openresty/lua/script.lua.j2"
@@ -213,15 +240,7 @@
     group: "{{ item.value.group | d(omit) }}"
     mode: "{{ item.value.mode | d('0644') }}"
     backup: "{{ item.value.backup | d(omit) }}"
-  loop: "{{ _openresty_lua_scripts | dict2items }}"
-  vars:
-    _openresty_lua_scripts: >-
-      {{
-        openresty_lua_scripts | combine(
-          openresty_group_lua_scripts,
-          openresty_host_lua_scripts,
-        )
-      }}
+  loop: "{{ _openresty_lua_scripts | dict2items | rejectattr('value.directory', 'defined') }}"
   notify:
     - test openresty configuration
     - reload openresty

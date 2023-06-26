@@ -30,3 +30,16 @@
       register: result
       failed_when: result.rc != 0 or result.stdout != "openresty Lua test passed"
       changed_when: false
+
+    - name: Ensure openresty Lua script directory installed correctly
+      # noqa command-instead-of-module
+      ansible.builtin.command:
+        argv:
+          - curl
+          - -H
+          - "Echo: 25110B2D1EB6"
+          - -s
+          - http://localhost:8008/
+      register: result
+      failed_when: result.rc != 0 or result.stdout != "25110B2D1EB6"
+      changed_when: false

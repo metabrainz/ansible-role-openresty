@@ -36,6 +36,10 @@ openresty_logrotate_configuration: |
     endscript
   }
 
+# https://docs.ansible.com/ansible/latest/collections/ansible/builtin/combine_filter.html#keyword-parameters
+openresty_configuration_list_merge: replace
+openresty_configuration_recursive_merge: true
+
 openresty_configuration:
   nginx: |
     user {{ openresty_user }};

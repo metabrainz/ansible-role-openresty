@@ -94,6 +94,8 @@
         openresty_configuration | combine(
           openresty_group_configuration,
           openresty_host_configuration,
+          list_merge=openresty_configuration_list_merge,
+          recursive=openresty_configuration_recursive_merge
         )
       }}
   notify:
@@ -115,6 +117,8 @@
         openresty_events_configuration | combine(
           openresty_group_events_configuration,
           openresty_host_events_configuration,
+          list_merge=openresty_configuration_list_merge,
+          recursive=openresty_configuration_recursive_merge
         )
       }}
   notify:
@@ -136,6 +140,8 @@
         openresty_http_configuration | combine(
           openresty_group_http_configuration,
           openresty_host_http_configuration,
+          list_merge=openresty_configuration_list_merge,
+          recursive=openresty_configuration_recursive_merge
         )
       }}
   notify:
@@ -157,6 +163,8 @@
         openresty_stream_configuration | combine(
           openresty_group_stream_configuration,
           openresty_host_stream_configuration,
+          list_merge=openresty_configuration_list_merge,
+          recursive=openresty_configuration_recursive_merge
         )
       }}
   notify:
@@ -178,6 +186,8 @@
         openresty_includes | combine(
           openresty_group_includes,
           openresty_host_includes,
+          list_merge=openresty_configuration_list_merge,
+          recursive=openresty_configuration_recursive_merge
         )
       }}
   notify:
@@ -199,6 +209,8 @@
         openresty_maps | combine(
           openresty_group_maps,
           openresty_host_maps,
+          list_merge=openresty_configuration_list_merge,
+          recursive=openresty_configuration_recursive_merge
         )
       }}
   notify:
@@ -212,6 +224,8 @@
         openresty_lua_scripts | combine(
           openresty_group_lua_scripts,
           openresty_host_lua_scripts,
+          list_merge=openresty_configuration_list_merge,
+          recursive=openresty_configuration_recursive_merge
         )
       }}
 
@@ -260,6 +274,9 @@
         openresty_params | combine(
           openresty_group_params,
           openresty_host_params,
+          list_merge=openresty_configuration_list_merge,
+          recursive=openresty_configuration_recursive_merge
+
         )
       }}
   notify:
@@ -281,6 +298,8 @@
         openresty_sites_available | combine(
           openresty_group_sites_available,
           openresty_host_sites_available,
+          list_merge=openresty_configuration_list_merge,
+          recursive=openresty_configuration_recursive_merge
         )
       }}
   notify:
@@ -294,6 +313,8 @@
         openresty_sites_enabled | combine(
           openresty_group_sites_enabled,
           openresty_host_sites_enabled,
+          list_merge=openresty_configuration_list_merge,
+          recursive=openresty_configuration_recursive_merge
         )
       }} 
 

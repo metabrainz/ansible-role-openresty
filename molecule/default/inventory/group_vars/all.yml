@@ -35,3 +35,13 @@ openresty_group_sites_available:
 
 openresty_sites_enabled:
   lua: true
+
+openresty_ssl_dhparam: |
+  -----BEGIN DH PARAMETERS-----
+  MIIBDAKCAQEAlKKjQOHLUb76VW+uzy9UA211bryO77iwA5VQr+OsL5D4LyQFn+np
+  7cEnlTqccRGy86250Bge2fakPVGnI45zVVCzPdVUu2Au6HV1TbFvoesXDWdnHGNy
+  Rz+WqacliHi3AnZn028EzZnbSU+W+mWFk73xkjkf9P6IDsVgvestC1bJcwJbHRLi
+  yGq7Eh4BwfJEIiSN14y3IQN8cVQ6GHLVf6mZl+JhwIFcyIQlAtY3v/XqlurwtPpg
+  lc9Jpj8rkhDqiF+v5TWyq1zrPBs0KgL0Bzwq88w9KjTIhLWulkEkQM4NwuoPbG9t
+  mCjw5goJw1QCF3MOXvjqGVwMe0pgt2kVHwIBAgICAOE=
+  -----END DH PARAMETERS-----

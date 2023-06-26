@@ -1,4 +1,11 @@
 ---
+openresty_host_ssl_certificates:
+  test:
+    certificate:
+      file: files/test.pem
+    key:
+      file: files/test.key
+
 openresty_host_lua_scripts:
   test:
     directory: files/lua/test/
@@ -17,7 +24,7 @@ openresty_host_sites_available:
         return 200 'ansible';
       }
     }
-  lua_echo:
+  lua_echo: |
     server {
       listen 127.0.0.1:8008;
       server_name localhost;
@@ -30,8 +37,24 @@ openresty_host_sites_available:
         }
       }
     }
+  ssl: |
+    server {
+      listen 127.0.0.1:8443 ssl;
+      server_name localhost;
+
+      ssl_dhparam {{ openresty_ssl_dhparam_path }};
+      ssl_protocols TLSv1.2 TLSv1.3;
+      ssl_certificate {{ openresty_ssl_certificate_directory }}/test.pem;
+      ssl_certificate_key {{ openresty_ssl_certificate_directory }}/test.key;
+
+      location / {
+        default_type text/plain;
+        return 200 'SSL';
+      }
+    }
 
 openresty_host_sites_enabled:
   molecule: true
   disabled: false
   lua_echo: true
+  ssl: true

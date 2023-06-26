@@ -64,6 +64,7 @@
     - "{{ openresty_sites_available_directory }}"
     - "{{ openresty_sites_enabled_directory }}"
     - "{{ openresty_lua_scripts_directory }}"
+    - "{{ openresty_ssl_certificate_directory }}"
 
 - name: Create openresty logs directory
   ansible.builtin.file:
@@ -79,6 +80,81 @@
     dest: "{{ openresty_logrotate_configuration_file }}"
     mode: "0644"
 
+- name: Generate SSL DH parameters
+  when: openresty_ssl_dhparam == "generate"
+  block:
+    - name: Generate SSL DH parameters
+      ansible.builtin.command:
+        argv:
+          - openssl
+          - dhparam
+          - -out
+          - "{{ openresty_ssl_dhparam_path }}"
+          - "{{ openresty_ssl_dhparam_keysize }}"
+        creates: "{{ openresty_ssl_dhparam_path }}"
+      notify:
+        - test openresty configuration
+        - reload openresty
+
+    - name: Set SSL DH parameters file permissions
+      ansible.builtin.file:
+        path: "{{ openresty_ssl_dhparam_path }}"
+        owner: "{{ openresty_ssl_dhparam_owner | d(omit) }}"
+        group: "{{ openresty_ssl_dhparam_group | d(omit) }}"
+        mode: "{{ openresty_ssl_dhparam_mode }}"
+
+- name: Install SSL DH parameters
+  ansible.builtin.template:
+    src: "etc/openresty/ssl/dhparam.pem.j2"
+    dest: "{{ openresty_ssl_dhparam_path }}"
+    owner: "{{ openresty_ssl_dhparam_owner | d(omit) }}"
+    group: "{{ openresty_ssl_dhparam_group | d(omit) }}"
+    mode: "{{ openresty_ssl_dhparam_mode }}"
+  when: openresty_ssl_dhparam and openresty_ssl_dhparam != "generate"
+  notify:
+    - test openresty configuration
+    - reload openresty
+
+- name: Combine openresty SSL certificate variables
+  ansible.builtin.set_fact:
+    _openresty_ssl_certificates: >-
+      {{
+        openresty_ssl_certificates | combine(
+          openresty_group_ssl_certificates,
+          openresty_host_ssl_certificates,
+          list_merge=openresty_configuration_list_merge,
+          recursive=openresty_configuration_recursive_merge
+        )
+      }}
+
+- name: Install openresty SSL certificates
+  ansible.builtin.template:
+    src: "etc/openresty/ssl/certificate.pem.j2"
+    dest: "{{ openresty_ssl_certificate_directory }}/{{ item.key }}.pem"
+    owner: "{{ item.value.owner | d(openresty_ssl_certificate_owner | d(omit)) }}"
+    group: "{{ item.value.group | d(openresty_ssl_certificate_group | d(omit)) }}"
+    mode: "{{ item.value.mode | d(openresty_ssl_certificate_mode) }}"
+    backup: "{{ item.value.backup | d(omit) }}"
+    force: "{{ item.value.force | d(omit) }}"
+  loop: "{{ _openresty_ssl_certificates | dict2items }}"
+  notify:
+    - test openresty configuration
+    - reload openresty
+
+- name: Install openresty SSL certificates keys
+  ansible.builtin.template:
+    src: "etc/openresty/ssl/key.pem.j2"
+    dest: "{{ openresty_ssl_certificate_directory }}/{{ item.key }}.key"
+    owner: "{{ item.value.owner | d(openresty_ssl_certificate_key_owner | d(omit)) }}"
+    group: "{{ item.value.group | d(openresty_ssl_certificate_key_group | d(omit)) }}"
+    mode: "{{ item.value.mode | d(openresty_ssl_certificate_key_mode) }}"
+    backup: "{{ item.value.backup | d(omit) }}"
+    force: "{{ item.value.force | d(omit) }}"
+  loop: "{{ _openresty_ssl_certificates | dict2items }}"
+  notify:
+    - test openresty configuration
+    - reload openresty
+
 - name: Install openresty base configuration
   ansible.builtin.template:
     src: "etc/openresty/openresty.conf.j2"
@@ -87,6 +163,7 @@
     group: "{{ item.value.group | d(omit) }}"
     mode: "{{ item.value.mode | d('0644') }}"
     backup: "{{ item.value.backup | d(omit) }}"
+    force: "{{ item.value.force | d(omit) }}"
   loop: "{{ _openresty_configuration | dict2items }}"
   vars:
     _openresty_configuration: >-
@@ -110,6 +187,7 @@
     group: "{{ item.value.group | d(omit) }}"
     mode: "{{ item.value.mode | d('0644') }}"
     backup: "{{ item.value.backup | d(omit) }}"
+    force: "{{ item.value.force | d(omit) }}"
   loop: "{{ _openresty_events_configuration | dict2items }}"
   vars:
     _openresty_events_configuration: >-
@@ -133,6 +211,7 @@
     group: "{{ item.value.group | d(omit) }}"
     mode: "{{ item.value.mode | d('0644') }}"
     backup: "{{ item.value.backup | d(omit) }}"
+    force: "{{ item.value.force | d(omit) }}"
   loop: "{{ _openresty_http_configuration | dict2items }}"
   vars:
     _openresty_http_configuration: >-
@@ -156,6 +235,7 @@
     group: "{{ item.value.group | d(omit) }}"
     mode: "{{ item.value.mode | d('0644') }}"
     backup: "{{ item.value.backup | d(omit) }}"
+    force: "{{ item.value.force | d(omit) }}"
   loop: "{{ _openresty_stream_configuration | dict2items }}"
   vars:
     _openresty_stream_configuration: >-
@@ -179,6 +259,7 @@
     group: "{{ item.value.group | d(omit) }}"
     mode: "{{ item.value.mode | d('0644') }}"
     backup: "{{ item.value.backup | d(omit) }}"
+    force: "{{ item.value.force | d(omit) }}"
   loop: "{{ _openresty_includes | dict2items }}"
   vars:
     _openresty_includes: >-
@@ -202,6 +283,7 @@
     group: "{{ item.value.group | d(omit) }}"
     mode: "{{ item.value.mode | d('0644') }}"
     backup: "{{ item.value.backup | d(omit) }}"
+    force: "{{ item.value.force | d(omit) }}"
   loop: "{{ _openresty_maps | dict2items }}"
   vars:
     _openresty_maps: >-
@@ -241,6 +323,7 @@
     group: "{{ item.value.group | d(omit) }}"
     mode: "{{ item.value.mode | d('0644') }}"
     directory_mode: "{{ item.value.directory_mode | d('0755') }}"
+    force: "{{ item.value.force | d(omit) }}"
   loop: "{{ _openresty_lua_scripts | dict2items | selectattr('value.directory', 'defined') }}"
   notify:
     - test openresty configuration
@@ -254,6 +337,7 @@
     group: "{{ item.value.group | d(omit) }}"
     mode: "{{ item.value.mode | d('0644') }}"
     backup: "{{ item.value.backup | d(omit) }}"
+    force: "{{ item.value.force | d(omit) }}"
   loop: "{{ _openresty_lua_scripts | dict2items | rejectattr('value.directory', 'defined') }}"
   notify:
     - test openresty configuration
@@ -267,6 +351,7 @@
     group: "{{ item.value.group | d(omit) }}"
     mode: "{{ item.value.mode | d('0644') }}"
     backup: "{{ item.value.backup | d(omit) }}"
+    force: "{{ item.value.force | d(omit) }}"
   loop: "{{ _openresty_params | dict2items }}"
   vars:
     _openresty_params: >-
@@ -291,6 +376,7 @@
     group: "{{ item.value.group | d(omit) }}"
     mode: "{{ item.value.mode | d('0644') }}"
     backup: "{{ item.value.backup | d(omit) }}"
+    force: "{{ item.value.force | d(omit) }}"
   loop: "{{ _openresty_sites_available | dict2items }}"
   vars:
     _openresty_sites_available: >-

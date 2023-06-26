@@ -16,6 +16,34 @@ openresty_reload_handler_state: reloaded
 
 openresty_user: www-data
 
+openresty_ssl_certificate_directory: "{{ openresty_configuration_directory }}/ssl"
+#openresty_ssl_certificate_directory_owner:
+#openresty_ssl_certificate_directory_group:
+openresty_ssl_certificate_directory_mode: "0750"
+
+openresty_ssl_certificates:
+  metabrainz.org:
+    key:
+      file: test.key
+    certificate:
+      file: test.pem
+openresty_group_ssl_certificates: {}
+openresty_host_ssl_certificates: {}
+
+#openresty_ssl_certificate_owner:
+#openresty_ssl_certificate_group:
+openresty_ssl_certificate_mode: "0644"
+#openresty_ssl_certificate_key_owner:
+#openresty_ssl_certificate_key_group:
+openresty_ssl_certificate_key_mode: "0640"
+
+openresty_ssl_dhparam_path: "{{ openresty_ssl_certificate_directory }}/dhparam.pem"
+openresty_ssl_dhparam: generate
+#openresty_ssl_dhparam_owner:
+#openresty_ssl_dhparam_group:
+openresty_ssl_dhparam_mode: "0640"
+openresty_ssl_dhparam_keysize: 2048
+
 openresty_logs_directory: /var/log/openresty
 openresty_logs_directory_owner: "{{ openresty_user }}"
 #openresty_logs_directory_group:
@@ -35,6 +63,10 @@ openresty_logrotate_configuration: |
       systemctl -q is-active openresty && systemctl reload openresty || true
     endscript
   }
+
+openresty_certficates: {}
+openresty_group_certificates: {}
+openresty_host_certificates: {}
 
 # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/combine_filter.html#keyword-parameters
 openresty_configuration_list_merge: replace

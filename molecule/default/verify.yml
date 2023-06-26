@@ -43,3 +43,10 @@
       register: result
       failed_when: result.rc != 0 or result.stdout != "25110B2D1EB6"
       changed_when: false
+
+    - name: Ensure openresty is listening on port 8443
+      # noqa command-instead-of-module
+      ansible.builtin.command: curl -k -s --tlsv1.3 https://localhost:8443/
+      register: result
+      failed_when: result.rc != 0 or result.stdout != "SSL"
+      changed_when: false

@@ -83,10 +83,10 @@
   ansible.builtin.template:
     src: "etc/openresty/openresty.conf.j2"
     dest: "{{ openresty_configuration_directory }}/{{ item.key }}.conf"
-    owner: "{{ item.owner | d(omit) }}"
-    group: "{{ item.group | d(omit) }}"
-    mode: "{{ item.mode | d('0644') }}"
-    backup: "{{ item.backup | d(omit) }}"
+    owner: "{{ item.value.owner | d(omit) }}"
+    group: "{{ item.value.group | d(omit) }}"
+    mode: "{{ item.value.mode | d('0644') }}"
+    backup: "{{ item.value.backup | d(omit) }}"
   loop: "{{ _openresty_configuration | dict2items }}"
   vars:
     _openresty_configuration: >-
@@ -104,10 +104,10 @@
   ansible.builtin.template:
     src: "etc/openresty/openresty.conf.j2"
     dest: "{{ openresty_events_configuration_directory }}/{{ item.key }}.conf"
-    owner: "{{ item.owner | d(omit) }}"
-    group: "{{ item.group | d(omit) }}"
-    mode: "{{ item.mode | d('0644') }}"
-    backup: "{{ item.backup | d(omit) }}"
+    owner: "{{ item.value.owner | d(omit) }}"
+    group: "{{ item.value.group | d(omit) }}"
+    mode: "{{ item.value.mode | d('0644') }}"
+    backup: "{{ item.value.backup | d(omit) }}"
   loop: "{{ _openresty_events_configuration | dict2items }}"
   vars:
     _openresty_events_configuration: >-
@@ -125,10 +125,10 @@
   ansible.builtin.template:
     src: "etc/openresty/openresty.conf.j2"
     dest: "{{ openresty_http_configuration_directory }}/{{ item.key }}.conf"
-    owner: "{{ item.owner | d(omit) }}"
-    group: "{{ item.group | d(omit) }}"
-    mode: "{{ item.mode | d('0644') }}"
-    backup: "{{ item.backup | d(omit) }}"
+    owner: "{{ item.value.owner | d(omit) }}"
+    group: "{{ item.value.group | d(omit) }}"
+    mode: "{{ item.value.mode | d('0644') }}"
+    backup: "{{ item.value.backup | d(omit) }}"
   loop: "{{ _openresty_http_configuration | dict2items }}"
   vars:
     _openresty_http_configuration: >-
@@ -146,10 +146,10 @@
   ansible.builtin.template:
     src: "etc/openresty/openresty.conf.j2"
     dest: "{{ openresty_stream_configuration_directory }}/{{ item.key }}.conf"
-    owner: "{{ item.owner | d(omit) }}"
-    group: "{{ item.group | d(omit) }}"
-    mode: "{{ item.mode | d('0644') }}"
-    backup: "{{ item.backup | d(omit) }}"
+    owner: "{{ item.value.owner | d(omit) }}"
+    group: "{{ item.value.group | d(omit) }}"
+    mode: "{{ item.value.mode | d('0644') }}"
+    backup: "{{ item.value.backup | d(omit) }}"
   loop: "{{ _openresty_stream_configuration | dict2items }}"
   vars:
     _openresty_stream_configuration: >-
@@ -167,10 +167,10 @@
   ansible.builtin.template:
     src: "etc/openresty/openresty.conf.j2"
     dest: "{{ openresty_includes_directory }}/{{ item.key }}.conf"
-    owner: "{{ item.owner | d(omit) }}"
-    group: "{{ item.group | d(omit) }}"
-    mode: "{{ item.mode | d('0644') }}"
-    backup: "{{ item.backup | d(omit) }}"
+    owner: "{{ item.value.owner | d(omit) }}"
+    group: "{{ item.value.group | d(omit) }}"
+    mode: "{{ item.value.mode | d('0644') }}"
+    backup: "{{ item.value.backup | d(omit) }}"
   loop: "{{ _openresty_includes | dict2items }}"
   vars:
     _openresty_includes: >-
@@ -188,10 +188,10 @@
   ansible.builtin.template:
     src: "etc/openresty/openresty.conf.j2"
     dest: "{{ openresty_maps_directory }}/{{ item.key }}"
-    owner: "{{ item.owner | d(omit) }}"
-    group: "{{ item.group | d(omit) }}"
-    mode: "{{ item.mode | d('0644') }}"
-    backup: "{{ item.backup | d(omit) }}"
+    owner: "{{ item.value.owner | d(omit) }}"
+    group: "{{ item.value.group | d(omit) }}"
+    mode: "{{ item.value.mode | d('0644') }}"
+    backup: "{{ item.value.backup | d(omit) }}"
   loop: "{{ _openresty_maps | dict2items }}"
   vars:
     _openresty_maps: >-
@@ -209,10 +209,10 @@
   ansible.builtin.template:
     src: "etc/openresty/lua/script.lua.j2"
     dest: "{{ openresty_lua_scripts_directory }}/{{ item.key }}.lua"
-    owner: "{{ item.owner | d(omit) }}"
-    group: "{{ item.group | d(omit) }}"
-    mode: "{{ item.mode | d('0644') }}"
-    backup: "{{ item.backup | d(omit) }}"
+    owner: "{{ item.value.owner | d(omit) }}"
+    group: "{{ item.value.group | d(omit) }}"
+    mode: "{{ item.value.mode | d('0644') }}"
+    backup: "{{ item.value.backup | d(omit) }}"
   loop: "{{ _openresty_lua_scripts | dict2items }}"
   vars:
     _openresty_lua_scripts: >-
@@ -230,10 +230,10 @@
   ansible.builtin.template:
     src: "etc/openresty/openresty.conf.j2"
     dest: "{{ openresty_configuration_directory }}/{{ item.key }}_params"
-    owner: "{{ item.owner | d(omit) }}"
-    group: "{{ item.group | d(omit) }}"
-    mode: "{{ item.mode | d('0644') }}"
-    backup: "{{ item.backup | d(omit) }}"
+    owner: "{{ item.value.owner | d(omit) }}"
+    group: "{{ item.value.group | d(omit) }}"
+    mode: "{{ item.value.mode | d('0644') }}"
+    backup: "{{ item.value.backup | d(omit) }}"
   loop: "{{ _openresty_params | dict2items }}"
   vars:
     _openresty_params: >-
@@ -251,10 +251,10 @@
   ansible.builtin.template:
     src: "etc/openresty/openresty.conf.j2"
     dest: "{{ openresty_sites_available_directory }}/{{ item.key }}.conf"
-    owner: "{{ item.owner | d(omit) }}"
-    group: "{{ item.group | d(omit) }}"
-    mode: "{{ item.mode | d('0644') }}"
-    backup: "{{ item.backup | d(omit) }}"
+    owner: "{{ item.value.owner | d(omit) }}"
+    group: "{{ item.value.group | d(omit) }}"
+    mode: "{{ item.value.mode | d('0644') }}"
+    backup: "{{ item.value.backup | d(omit) }}"
   loop: "{{ _openresty_sites_available | dict2items }}"
   vars:
     _openresty_sites_available: >-

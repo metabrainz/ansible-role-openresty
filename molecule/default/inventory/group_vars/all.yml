@@ -1,5 +1,5 @@
 ---
-openresty_package_version: "1.21.4.1-1~{{ ansible_distribution_release }}1"
+openresty_package_version: "1.21.4*"
 
 openresty_opm_packages:
   - fffonion/lua-resty-acme

@@ -10,6 +10,14 @@
       changed_when: false
       failed_when: result.stat.islnk is not defined or not result.stat.islnk
 
+    - name: Ensure expected openresty version is installed
+      ansible.builtin.command: dpkg-query -f '${Version}' -W openresty
+      register: result
+      changed_when: false
+      failed_when: >-
+        result.rc != 0 or
+        result.stdout is not match("1\.21\.4\.")
+
     - name: Ensure openresty is listening on port 8000
       # noqa command-instead-of-module
       ansible.builtin.command: curl -s http://localhost:8000/molecule

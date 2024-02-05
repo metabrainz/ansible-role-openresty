@@ -22,23 +22,20 @@
     state: present
     update_cache: true
 
+- name: Install openresty apt preferences
+  ansible.builtin.template:
+    src: etc/apt/preferences.d/99-ansible-openresty.j2
+    dest: /etc/apt/preferences.d/99-ansible-openresty
+    mode: "0644"
+
 - name: Install openresty
   ansible.builtin.apt:
-    name: >-
-      {{
-        ("%s=%s" | format(openresty_package, openresty_package_version))
-          if (openresty_package_version | d()) else openresty_package
-      }}
+    name: "{{ openresty_packages }}"
     state: "{{ openresty_package_state }}"
     install_recommends: "{{ openresty_install_recommends | d(omit) }}"
     policy_rc_d: "{{ openresty_package_policy_rc_d }}"
   ignore_errors: "{{ ansible_check_mode }}"
 
-- name: Set openresty package dpkg selection states
-  ansible.builtin.dpkg_selections:
-    name: "{{ openresty_package }}"
-    selection: "{{ openresty_package_dpkg_selection }}"
-  when: openresty_package_dpkg_selection | d()
 
 - name: Install openresty Lua packages
   ansible.builtin.command:

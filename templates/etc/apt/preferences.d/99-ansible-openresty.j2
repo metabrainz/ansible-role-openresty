@@ -1,0 +1,8 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+# {{ ansible_managed }}
+{% if openresty_package_version|d() %}
+
+Package: {{ openresty_pinned_packages | join(' ') }}
+Pin: version {{ openresty_package_version }}
+Pin-Priority: 990
+{% endif %}

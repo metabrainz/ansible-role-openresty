@@ -3,6 +3,12 @@ openresty_deb_architecture:
   aarch64: arm64
   x86_64: amd64
 
+openresty_pinned_packages:
+  - openresty
+  - openresty-resty
+  - openresty-restydoc
+  - openresty-opm
+
 openresty_binary_path: /usr/bin/openresty
 
 openresty_configuration_directory: /etc/openresty

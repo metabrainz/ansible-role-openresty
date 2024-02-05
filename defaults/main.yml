@@ -3,10 +3,12 @@ openresty_repository_key_url: https://openresty.org/package/pubkey.gpg
 openresty_repository_key_path: /usr/share/keyrings/openresty.asc
 #docker_repository_key_checksum:
 
-openresty_package: openresty
-#openresty_package_version: "1.21.4.1-1~focal1"
+openresty_packages:
+  - openresty
+  - openresty-opm
+  - openresty-resty
+#openresty_package_version: "1.21*"
 openresty_package_state: present
-#openresty_package_dpkg_selection: hold
 openresty_package_policy_rc_d: 101
 #openresty_install_recommends: false
 

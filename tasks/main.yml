@@ -36,12 +36,11 @@
     policy_rc_d: "{{ openresty_package_policy_rc_d }}"
   ignore_errors: "{{ ansible_check_mode }}"
 
-
 - name: Install openresty Lua packages
   ansible.builtin.command:
     argv:
       - opm
-      - install
+      - get
       - "{{ item }}"
   register: _openresty_opm_install
   loop: "{{ (openresty_opm_packages + openresty_group_opm_packages + openresty_host_opm_packages) | flatten }}"
